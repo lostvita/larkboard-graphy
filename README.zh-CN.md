@@ -30,10 +30,13 @@
 
 ## 效果预览
 
-<!-- TODO: 补充实际 demo 截图 -->
-| Column + Highlight | Line + TrendLine | Donut + Widgets |
-|:--:|:--:|:--:|
-| ![column](https://via.placeholder.com/300x180?text=Column+Highlight) | ![line](https://via.placeholder.com/300x180?text=Line+TrendLine) | ![donut](https://via.placeholder.com/300x180?text=Donut+Widgets) |
+| 分组柱状图 | 柱状图 + 趋势线 | 水平条形图 | 多系列折线图 |
+|:--:|:--:|:--:|:--:|
+| ![column-grouped](./assets/column-grouped.png) | ![column-trendline](./assets/column-trendline.png) | ![bar-horizontal](./assets/bar-horizontal.png) | ![line-multi-series](./assets/line-multi-series.png) |
+
+| 环形图 + Widget | 堆叠柱状图 | 柱线组合图 | 百分比堆叠条形图 |
+|:--:|:--:|:--:|:--:|
+| ![donut-widgets](./assets/donut-widgets.png) | ![column-stacked](./assets/column-stacked.png) | ![combo-bar-line](./assets/combo-bar-line.png) | ![bar-100-stacked](./assets/bar-100-stacked.png) |
 
 ## 支持图表类型
 

@@ -103,7 +103,16 @@
 
 - 必须使用 UTF-8 编码保存 SVG 文件
 - Python 写入时显式指定 `open(..., encoding='utf-8')`
-- 中文内容不做任何转义（不用 `&#x` 实体）
+- **中文必须转义为 `&#x` 十六进制实体**（如 `中` → `&#x4E2D;`），whiteboard-cli 存在编码 bug，直接写入 UTF-8 中文会乱码
+- 转义函数：
+
+```python
+def to_svg_entities(text):
+    """将非 ASCII 字符转为 &#x hex 实体，ASCII 字符保留原样"""
+    return ''.join(f'&#x{ord(c):X};' if ord(c) > 127 else c for c in text)
+```
+
+- SVG 文件头推荐添加 XML 声明：`<?xml version="1.0" encoding="UTF-8"?>`
 
 ### whiteboard-cli 常用命令
 

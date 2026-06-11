@@ -30,10 +30,13 @@
 
 ## Preview
 
-<!-- TODO: Add demo screenshots -->
-| Column + Highlight | Line + TrendLine | Donut + Widgets |
-|:--:|:--:|:--:|
-| ![column](https://via.placeholder.com/300x180?text=Column+Highlight) | ![line](https://via.placeholder.com/300x180?text=Line+TrendLine) | ![donut](https://via.placeholder.com/300x180?text=Donut+Widgets) |
+| Column (Grouped) | Column + TrendLine | Bar (Horizontal) | Line (Multi-Series) |
+|:--:|:--:|:--:|:--:|
+| ![column-grouped](./assets/column-grouped.png) | ![column-trendline](./assets/column-trendline.png) | ![bar-horizontal](./assets/bar-horizontal.png) | ![line-multi-series](./assets/line-multi-series.png) |
+
+| Donut + Widgets | Column (Stacked) | Combo (Bar + Line) | Bar 100% Stacked |
+|:--:|:--:|:--:|:--:|
+| ![donut-widgets](./assets/donut-widgets.png) | ![column-stacked](./assets/column-stacked.png) | ![combo-bar-line](./assets/combo-bar-line.png) | ![bar-100-stacked](./assets/bar-100-stacked.png) |
 
 ## Supported Chart Types
 
