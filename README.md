@@ -195,6 +195,17 @@ Then follow the interactive flow:
 4. **Review narrative** — agent proposes which widgets to add and why
 5. **Get your link** — a fully editable Feishu whiteboard URL is returned
 
+### Usage Example
+
+```
+/larkboard-graphy Background: Quarterly revenue comparison of three EV brands (BYD, Li Auto, Xiaomi) in 2025. BYD dominates all four quarters with Q4 hitting ¥128B, Li Auto grows steadily, Xiaomi enters in Q2 and ramps up fast. Data:
+Quarter	BYD(¥B)	Li Auto(¥B)	Xiaomi(¥B)
+Q1	98	45	0
+Q2	110	52	18
+Q3	118	58	35
+Q4	128	62	52
+```
+
 ## Roadmap
 
 - [ ] Waterfall chart support

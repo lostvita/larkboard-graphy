@@ -173,11 +173,20 @@ A → B 表示"从 A 的值变化到 B 的值"，箭头（marker-end）始终在
 ```
 
 三段线结构（垂直→水平→垂直）：
-1. 垂直段: 从锚定点 A 向上到 connector_y
+1. 垂直段（stub A）: 从锚定点 A 向上到 connector_y，最小长度 min_stub
 2. 水平段: 从 A 的 x 横向连接到 B 的 x
-3. 垂直段: 从 connector_y 向下到锚定点 B，带 marker-end 箭头
+3. 垂直段（stub B）: 从 connector_y 向下到锚定点 B，带 marker-end 箭头，最小长度 min_stub
 
 胶囊标签居中于水平段。
+
+### Stub 最小长度
+
+| 参数 | 值 | 说明 |
+|------|------|------|
+| min_stub | 30px | stub 垂直段（Column）或水平段（Bar）的最小可见长度 |
+| stub_start_gap | 5px | stub 起始端距锚定点的间距 |
+
+stub 长度 = `|connector_y - (anchor - stub_start_gap)|`，若计算结果 < min_stub，则向外延伸 connector_y 使其满足 min_stub。在 Stacked 图中，若存在总量标签（位于 `stack_top - 10`），stub 起始点须跳过标签区：`stub_start = stack_top - 26`（标签高度 12px + 间距 14px）。
 
 ### Column SVG 模板
 
@@ -189,14 +198,14 @@ A → B 表示"从 A 的值变化到 B 的值"，箭头（marker-end）始终在
   </marker>
 </defs>
 
-<!-- 垂直段: A 向上 -->
-<line x1="{ax}" y1="{a_anchor - 5}" x2="{ax}" y2="{connector_y}"
+<!-- 垂直段: A 向上（起始跳过 data label 区域） -->
+<line x1="{ax}" y1="{stub_start_a}" x2="{ax}" y2="{connector_y}"
   stroke="{arrow_color}" stroke-width="2"/>
 <!-- 水平段 -->
 <line x1="{ax}" y1="{connector_y}" x2="{bx}" y2="{connector_y}"
   stroke="{arrow_color}" stroke-width="2"/>
 <!-- 垂直段: 向下到 B，带箭头 -->
-<line x1="{bx}" y1="{connector_y}" x2="{bx}" y2="{b_anchor - 5}"
+<line x1="{bx}" y1="{connector_y}" x2="{bx}" y2="{stub_start_b}"
   stroke="{arrow_color}" stroke-width="2" marker-end="url(#arrow-diff)"/>
 
 <!-- 胶囊标签: 居中于水平段 -->
@@ -204,6 +213,20 @@ A → B 表示"从 A 的值变化到 B 的值"，箭头（marker-end）始终在
   fill="#FFFFFF" stroke="{arrow_color}" stroke-width="1.5"/>
 <text x="{mid_x}" y="{connector_y + 4}" text-anchor="middle"
   font-size="12" font-weight="600" fill="#1a1a1a">{label}</text>
+```
+
+**stub_start 计算：**
+```
+# 普通 Column 图
+stub_start_a = a_anchor - 5
+stub_start_b = b_anchor - 5
+
+# Stacked 图（有总量标签时）
+stub_start_a = a_stack_top - 26  (跳过总量标签区域)
+stub_start_b = b_stack_top - 26
+
+# 保证最小 stub 长度
+connector_y = min(stub_start_a, stub_start_b) - min_stub
 ```
 
 ### Bar 图表结构
@@ -219,9 +242,9 @@ A → B 表示"从 A 的值变化到 B 的值"，箭头（marker-end）始终在
 ```
 
 三段线结构（水平→垂直→水平），相对 Column 旋转 90°：
-1. 水平段: 从锚定点 A 向右到 connector_x
+1. 水平段（stub A）: 从锚定点 A 向右到 connector_x，最小长度 min_stub
 2. 垂直段: 从 A 的 y 纵向连接到 B 的 y
-3. 水平段: 从 connector_x 向左到锚定点 B，带 marker-end 箭头
+3. 水平段（stub B）: 从 connector_x 向左到锚定点 B，带 marker-end 箭头，最小长度 min_stub
 
 胶囊标签居中于垂直段。
 
@@ -235,14 +258,14 @@ A → B 表示"从 A 的值变化到 B 的值"，箭头（marker-end）始终在
   </marker>
 </defs>
 
-<!-- 水平段: A 向右 -->
-<line x1="{a_anchor + 5}" y1="{ay}" x2="{connector_x}" y2="{ay}"
+<!-- 水平段: A 向右（起始跳过 data label 区域） -->
+<line x1="{stub_start_a}" y1="{ay}" x2="{connector_x}" y2="{ay}"
   stroke="{arrow_color}" stroke-width="2"/>
 <!-- 垂直段 -->
 <line x1="{connector_x}" y1="{ay}" x2="{connector_x}" y2="{by}"
   stroke="{arrow_color}" stroke-width="2"/>
 <!-- 水平段: 向左到 B，带箭头 -->
-<line x1="{connector_x}" y1="{by}" x2="{b_anchor + 5}" y2="{by}"
+<line x1="{connector_x}" y1="{by}" x2="{stub_start_b}" y2="{by}"
   stroke="{arrow_color}" stroke-width="2" marker-end="url(#arrow-diff)"/>
 
 <!-- 胶囊标签: 居中于垂直段 -->
@@ -252,12 +275,27 @@ A → B 表示"从 A 的值变化到 B 的值"，箭头（marker-end）始终在
   font-size="12" font-weight="600" fill="#1a1a1a">{label}</text>
 ```
 
+**stub_start 计算（Bar）：**
+```
+# 普通 Bar 图
+stub_start_a = a_anchor + 5
+stub_start_b = b_anchor + 5
+
+# Stacked Bar（有总量标签时）
+stub_start_a = a_stack_right + 26  (跳过总量标签区域)
+stub_start_b = b_stack_right + 26
+
+# 保证最小 stub 长度
+connector_x = max(stub_start_a, stub_start_b) + min_stub
+```
+
 ### 参数
 
 | 参数 | 值 | 说明 |
 |------|------|------|
-| connector_y (Column) | chart_plot_y - 10 | 位于图表绘制区最上方（高于所有气泡 Widget） |
-| connector_x (Bar) | chart_plot_right + 10 | 位于图表绘制区最右侧（超出所有条形末端） |
+| min_stub | 30px | stub 最小可见长度，防止线条过短与 data label 重叠 |
+| connector_y (Column) | min(stub_start_a, stub_start_b) - min_stub | 保证两侧 stub 均 ≥ 30px |
+| connector_x (Bar) | max(stub_start_a, stub_start_b) + min_stub | 保证两侧 stub 均 ≥ 30px |
 | arrow_color | 主题色盘高饱和色 | 如 Vivid #f38650，可用户覆盖 |
 | 胶囊高度 | 20px | |
 | 胶囊宽度 pill_w | 动态 | 文字宽 + 20px |

@@ -138,22 +138,62 @@ bar_x = group_center - (series_count * 58 + (series_count - 1) * 10) / 2 + serie
 | 参数 | 值 | 说明 |
 |------|------|------|
 | 段间距 | 0px | 各段紧密相连，无间隔 |
-| 圆角 | 仅最顶段/最右段 rx=3 | 其余段 rx=0 |
+| 圆角 | 整体外轮廓圆角 r=3 | 见下方圆角规则 |
 | 数据标签阈值 | Column: 段高 < 25px 隐藏; Bar: 段宽 < 40px 隐藏 | |
 | 总量标签 | 仅普通 Stacked 可选 | 100% Stacked 不需要（总量无意义） |
 | Widget 锚定点 | 堆叠整体的顶部中心（Column）或右端中心（Bar） | |
+
+### 圆角规则（Stacked 专用）
+
+堆叠柱/条视觉上是**一个整体**，只有最外层四角为圆角（r=3），内部相邻段之间为直接连接。
+
+**Column Stacked 圆角分配：**
+- 顶段：仅 top-left + top-right 圆角
+- 中间段：四角全部为直角
+- 底段：仅 bottom-left + bottom-right 圆角
+
+**Bar Stacked 圆角分配：**
+- 左段：仅 top-left + bottom-left 圆角
+- 中间段：四角全部为直角
+- 右段：仅 top-right + bottom-right 圆角
+
+由于 SVG `<rect rx="3">` 会统一圆角四角，选择性圆角须用 `<path>` 实现：
+
+```svg
+<!-- Column Stacked 顶段：仅顶部圆角 -->
+<path d="M {x},{y+r} Q {x},{y} {x+r},{y} L {x+w-r},{y} Q {x+w},{y} {x+w},{y+r} L {x+w},{y+h} L {x},{y+h} Z" fill="{color}"/>
+
+<!-- Column Stacked 底段：仅底部圆角 -->
+<path d="M {x},{y} L {x+w},{y} L {x+w},{y+h-r} Q {x+w},{y+h} {x+w-r},{y+h} L {x+r},{y+h} Q {x},{y+h} {x},{y+h-r} Z" fill="{color}"/>
+
+<!-- 中间段：全直角，用 rect 即可 -->
+<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{color}"/>
+```
+
+```svg
+<!-- Bar Stacked 左段：仅左侧圆角 -->
+<path d="M {x+r},{y} L {x+w},{y} L {x+w},{y+h} L {x+r},{y+h} Q {x},{y+h} {x},{y+h-r} L {x},{y+r} Q {x},{y} {x+r},{y} Z" fill="{color}"/>
+
+<!-- Bar Stacked 右段：仅右侧圆角 -->
+<path d="M {x},{y} L {x+w-r},{y} Q {x+w},{y} {x+w},{y+r} L {x+w},{y+h-r} Q {x+w},{y+h} {x+w-r},{y+h} L {x},{y+h} Z" fill="{color}"/>
+
+<!-- 中间段：全直角 -->
+<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{color}"/>
+```
+
+其中 `r = 3`。当堆叠仅有 2 段时无中间段；当仅 1 段时使用普通 `<rect rx="3">`。
 
 ### Column Stacked
 
 垂直堆叠柱，柱高 = 各段绝对值累加。
 
 ```svg
-<!-- 底段（无圆角） -->
-<rect x="{bar_x}" y="{seg_y}" width="{bar_w}" height="{seg_h}" fill="{color_0}"/>
-<!-- 中间段（无圆角） -->
+<!-- 底段：仅底部圆角 -->
+<path d="M {x},{y} L {x+w},{y} L {x+w},{y+h-3} Q {x+w},{y+h} {x+w-3},{y+h} L {x+3},{y+h} Q {x},{y+h} {x},{y+h-3} Z" fill="{color_0}"/>
+<!-- 中间段：全直角 -->
 <rect x="{bar_x}" y="{seg_y}" width="{bar_w}" height="{seg_h}" fill="{color_1}"/>
-<!-- 顶段（有圆角） -->
-<rect x="{bar_x}" y="{seg_y}" width="{bar_w}" height="{seg_h}" rx="3" fill="{color_2}"/>
+<!-- 顶段：仅顶部圆角 -->
+<path d="M {x},{y+3} Q {x},{y} {x+3},{y} L {x+w-3},{y} Q {x+w},{y} {x+w},{y+3} L {x+w},{y+h} L {x},{y+h} Z" fill="{color_2}"/>
 ```
 
 | 参数 | 值 | 说明 |
@@ -210,12 +250,12 @@ for ci in range(num_categories):
 水平堆叠条，条长 = 各段绝对值累加。
 
 ```svg
-<!-- 左段（无圆角） -->
-<rect x="{seg_x}" y="{bar_y}" width="{seg_w}" height="{bar_h}" fill="{color_0}"/>
-<!-- 中间段 -->
+<!-- 左段：仅左侧圆角 -->
+<path d="M {x+3},{y} L {x+w},{y} L {x+w},{y+h} L {x+3},{y+h} Q {x},{y+h} {x},{y+h-3} L {x},{y+3} Q {x},{y} {x+3},{y} Z" fill="{color_0}"/>
+<!-- 中间段：全直角 -->
 <rect x="{seg_x}" y="{bar_y}" width="{seg_w}" height="{bar_h}" fill="{color_1}"/>
-<!-- 右段（右侧圆角） -->
-<rect x="{seg_x}" y="{bar_y}" width="{seg_w}" height="{bar_h}" rx="3" fill="{color_2}"/>
+<!-- 右段：仅右侧圆角 -->
+<path d="M {x},{y} L {x+w-3},{y} Q {x+w},{y} {x+w},{y+3} L {x+w},{y+h-3} Q {x+w},{y+h} {x+w-3},{y+h} L {x},{y+h} Z" fill="{color_2}"/>
 ```
 
 | 参数 | 值 | 说明 |
@@ -312,6 +352,7 @@ for ci in range(num_categories):
 - 面积填充：`<polygon>` 沿曲线+基线闭合，`fill="{series_color}" fill-opacity="0.03"`
 - 不支持 smooth line（平滑曲线），仅直线连接
 - 所有坐标（line 端点、circle 圆心、polygon 顶点）必须使用同一组整数坐标
+- **⚠️ 密集数据节点规则**（强制，类目数 ≥ 20 时）：见下方「Line 密集模式」章节
 - TrendLine：基于各系列节点坐标计算线性回归，虚线两端延伸 20px，z-index 低于数据节点；存在 TrendLine 时线段需设 `stroke-opacity="0.3"`、节点设 `opacity="0.3"` 弱化（详见 WIDGETS.md TrendLine 使用规则）
 - Highlight：point 模式 → 目标节点空心圆变实心圆 + 显示 Data Label，无弱化；line 模式 → 非高亮系列 `stroke-opacity="0.3"` + 节点 `opacity="0.3"`（与 TrendLine 互斥）
 - DifferenceArrow 限制：
@@ -319,6 +360,43 @@ for ci in range(num_categories):
   - 原因：Line 图的多系列在同一 X 位置仅有 Y 轴方向的偏移，垂直段过短且视觉上无法清晰表达对比关系
   - 允许的用法：同一系列不同类目之间的对比（如 Q2→Q4 的同系列趋势变化）
   - 跨系列对比应通过 Comment/Insight 文字表达，而非 DifferenceArrow
+
+### Line 密集模式（类目数 ≥ 20）
+
+当 Line / Combo 的类目数量 ≥ 20 时，**必须**启用密集模式。此规则为强制规则，不可跳过。
+
+**核心原则：不绘制普通数据节点（圆圈），仅绘制线段。**
+
+| 条件 | 是否绘制节点圆圈 |
+|------|-----------------|
+| 普通数据点 | ❌ 不绘制 |
+| Widget 锚定点（Comment/PinNumber/Sticker/HighlightLabel） | ✅ 绘制空心圆 |
+| Highlight(point) 目标 | ✅ 绘制实心圆 |
+| TrendLine 端点 | ❌ 不绘制 |
+
+**生成伪代码：**
+
+```python
+is_dense = len(categories) >= 20
+
+for series in all_series:
+    # 始终绘制线段
+    for i in range(len(points) - 1):
+        draw_line(points[i], points[i+1], series_color)
+
+    # 节点：密集模式下仅绘制关键节点
+    for i, pt in enumerate(points):
+        if is_dense:
+            if pt in widget_anchor_points or pt in highlight_targets:
+                draw_circle(pt)  # 空心圆或实心圆
+            # else: 跳过，不绘制
+        else:
+            draw_circle(pt)  # 正常模式，全部绘制
+```
+
+**X 轴标签间隔：** 密集模式下 X 轴标签不逐一显示，按等距间隔取样（推荐 8-12 个标签），如 52 周取每 5 周显示。
+
+---
 
 **Pie (v2)**：
 - 无坐标轴，不支持 DifferenceArrow / AverageLine / GoalLine / TrendLine
@@ -628,6 +706,7 @@ bar_x = group_center - bar_w / 2
 - 面积填充：`<polygon>` + `fill-opacity="0.03"`（可选）
 - 所有坐标使用整数
 - Y 轴映射：使用右 Y 轴的 val_to_y_right
+- 密集数据节点规则同 Line 图（类目数 ≥ 20 时仅显示关键节点）
 
 ```python
 def val_to_y_right(v):
