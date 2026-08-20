@@ -38,6 +38,10 @@
 |:--:|:--:|:--:|:--:|
 | ![donut-widgets](./assets/donut-widgets.png) | ![column-stacked](./assets/column-stacked.png) | ![combo-bar-line](./assets/combo-bar-line.png) | ![bar-100-stacked](./assets/bar-100-stacked.png) |
 
+| Funnel |
+|:--:|
+| ![funnel](./assets/funnel.png) |
+
 ## Supported Chart Types
 
 | Type | Description |
@@ -52,6 +56,7 @@
 | Pie | Pie chart (solid) |
 | Donut | Ring chart with optional center label |
 | Combo | Column + Line combination |
+| Funnel | Funnel (single-series bars + connecting ribbons) |
 
 ## Widgets
 
@@ -214,10 +219,6 @@ Q4	128	62	52
 - [ ] Waterfall chart support
 - [ ] Scatter / Bubble chart
 - [ ] Horizontal timeline chart
-- [ ] Multi-board linked dashboards
-- [ ] Animation / transition effects (if Feishu supports)
-- [ ] Auto-refresh from live data sources
-- [ ] Export to PNG / PDF alongside whiteboard
 
 ## License
 

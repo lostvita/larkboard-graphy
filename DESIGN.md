@@ -159,7 +159,7 @@ Insight 区域支持通过 `<tspan>` 实现富文本样式，用于强化数据�
 |------|------|------|
 | y_axis_space | 56px | Y 轴标签预留宽度 |
 | chart_x | content_x + y_axis_space | 104 |
-| legend_col_w | 按实际内容计算 | 最长图例文字宽 + swatch(12) + gap(6) + 右余量(8) |
+| legend_col_w | 按实际内容计算；Funnel = 0 | 最长图例文字宽 + swatch(12) + gap(6) + 右余量(8) |
 | chart_w | content_right - chart_x - legend_col_w - 14 | 图表填满到图例列左侧 |
 | legend_x | content_right - legend_col_w | 图例列右对齐到 content_right |
 
@@ -196,15 +196,15 @@ Insight 区域支持通过 `<tspan>` 实现富文本样式，用于强化数据�
 2. Border 外矩形
 3. Border 内矩形
 4. 网格线（水平线 + 基线）
-5. 柱子 / 折线等图表主体
-6. 数据标签（柱内文字）
+5. 图表主体（Funnel：先连接斜面 polygon，再柱子 rect；其余类型为柱子 / 折线等）
+6. 数据标签（柱内文字；Funnel 短柱为柱顶外侧药丸）
 7. X 轴标签、Y 轴标签
 8. AverageLine / GoalLine 虚线
 9. Widget: DifferenceArrow（线段 + 胶囊）
 10. Widget: Comment / PinNumber / Sticker（最高层级，覆盖 DifferenceArrow 线段）
 11. 标题区文字
 12. 信息区文字
-13. 图例
+13. 图例（Funnel 不绘制图例）
 
 层级原则：气泡类 Widget（Comment / PinNumber / Sticker）层级最高，始终显示在 DifferenceArrow 线段之上。
 

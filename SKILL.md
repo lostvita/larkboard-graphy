@@ -1,3 +1,8 @@
+---
+name: larkboard-graphy
+description: "Generate Feishu whiteboard data charts conforming to the Graphy design system, supporting data-storytelling widgets and theme color palettes. Use when the user wants to create data charts on a Feishu whiteboard (column, bar, line, pie, donut, combo, funnel), generate visual data stories, or build larkboard-graphy charts."
+---
+
 # larkboard-graphy
 
 生成符合 Graphy 设计体系的飞书白板数据图表，支持数据叙事 Widget 与主题色盘。
@@ -9,6 +14,7 @@
 - "数据图表白板"
 - "graphy 白板"
 - "飞书数据故事"
+- "漏斗图白板"
 
 ## 前置条件
 
@@ -43,6 +49,7 @@ Agent 解析数据后，展示确认信息（使用 AskQuestion）：
 8. Bar Stacked（堆叠条形图）
 9. Bar 100% Stacked（百分比堆叠条形图）
 10. Combo（柱线组合图）
+11. Funnel（漏斗图）
 ```
 
 规则：
@@ -57,6 +64,7 @@ Agent 解析数据后，展示确认信息（使用 AskQuestion）：
   - 部分-整体 + 排名 + 关注总量 → Bar Stacked
   - 部分-整体 + 排名 + 关注占比 → Bar 100% Stacked
   - 双指标（量+率）组合 → Combo
+  - 转化漏斗 / 有序阶段流失（单系列、阶段递减） → Funnel
 - 用户可选择其他类型
 - 不要添加自定义的"其他"选项（系统已内置 other 入口，用户可直接输入）
 
@@ -73,7 +81,7 @@ Agent 根据数据特征推荐 3 个主题选项（使用 AskQuestion）：
 
 规则：
 - 不要添加自定义的"其他"选项（系统已内置 other 入口，用户可直接输入色系名称如 orange、Pastel）
-- 推荐策略：单系列 → Monochrome；多系列 → Colorful
+- 推荐策略：单系列 / Funnel → Monochrome；多系列 → Colorful
 - 用户输入自由文本时按色系名匹配（见 THEMES.md）
 
 ### Step 3: 叙事分析（需用户确认）
@@ -85,6 +93,7 @@ Agent 自动分析数据并提出叙事建议：
 3. 识别对比关系（系列间差异、同比环比）
 4. 推荐 Widget 方案
 5. 撰写 Insight 标题 + 正文（正文需包含 1-2 句数据支撑的叙事分析）
+6. Funnel 额外：计算相邻阶段转化率，优先标注跌幅最大的断点（DifferenceArrow）
 
 展示格式：
 ```
@@ -127,8 +136,9 @@ Insight 撰写规则：
 1. 按 DESIGN.md 架构生成完整 SVG（三段式布局）
 2. 应用 CHARTS.md 中的图表元素规范
 3. **密集数据检查**：若为 Line/Combo 且类目数 ≥ 20，必须启用密集模式（不绘制普通节点圆圈，仅保留线段和 Widget 锚定节点）— 详见 CHARTS.md「Line 密集模式」
-4. 叠加 WIDGETS.md 中确认的 Widget
-5. 应用 THEMES.md 中选定的色盘
+4. **Funnel 检查**：数据必须按值降序；先画连接斜面再画柱子；不绘制图例；短柱标签外移而非隐藏 — 详见 CHARTS.md「Funnel 图表元素」
+5. 叠加 WIDGETS.md 中确认的 Widget
+6. 应用 THEMES.md 中选定的色盘
 
 ### Step 5: 渲染校验
 

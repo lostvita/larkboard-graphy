@@ -115,6 +115,8 @@ Colorful 色盘的 border 默认使用 purple（#c5aefb）。
   - Pastel: #b2ddc9, #b2a4ff, #ffadad, ...
   - Vivid: #b399fd, #fc8497, #fbbc30, ...
 
+- **Funnel**：恒为 1 系列。全部阶段使用同一系列色；连接斜面使用相同 hex + `fill-opacity="0.2"`（飞书不支持 rgba）
+
 ### Widget 颜色
 
 | Widget | 颜色来源 |
@@ -136,6 +138,7 @@ Agent 根据数据推荐主题时的选择逻辑：
 | 条件 | 推荐 |
 |------|------|
 | 单系列 | Monochrome（推荐 blue / purple / green） |
+| Funnel（单系列漏斗） | Monochrome（推荐 blue / purple / green） |
 | 2~3 系列 | Monochrome 或 Colorful Pastel |
 | 4+ 系列 | Colorful Vivid |
 | 用户指定色系 | 直接使用对应色盘 |

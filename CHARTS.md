@@ -16,6 +16,7 @@
 | v2 | Pie | 饼图（实心圆） |
 | v2 | Donut | 环形图（中空圆环，可含中心标签） |
 | v2 | Combo | 柱线组合图 |
+| v3 | Funnel | 漏斗图（单系列柱 + 相邻柱顶连接斜面） |
 
 Column 与 Bar 的区别：
 - **Column**: 类目轴 = X 轴（水平），数值轴 = Y 轴（垂直），柱子从底部向上生长
@@ -315,17 +316,17 @@ for ci in range(num_categories):
 
 不同图表类型支持的 Widget 不同：
 
-| Widget | Column/Bar | Line (v2) | Pie (v2) | Donut (v2) | Combo (v2) |
-|--------|:----------:|:----------:|:--------:|:----------:|:----------:|
-| Comment | Y | Y | Y | Y | Y |
-| PinNumber | Y | Y | Y | Y | Y |
-| Sticker | Y | Y | Y | Y | Y |
-| DifferenceArrow | Y | Y | - | - | Y |
-| AverageLine | Y | Y | - | - | Y (仅轴类) |
-| GoalLine | Y | Y | - | - | Y (仅轴类) |
-| TrendLine | Y | Y | - | - | Y (仅轴类) |
-| Highlight | Y (含 Stacked) | Y | - | - | Y |
-| HighlightLabel | Y | Y | Y | Y | Y |
+| Widget | Column/Bar | Line (v2) | Pie (v2) | Donut (v2) | Combo (v2) | Funnel (v3) |
+|--------|:----------:|:----------:|:--------:|:----------:|:----------:|:-----------:|
+| Comment | Y | Y | Y | Y | Y | Y |
+| PinNumber | Y | Y | Y | Y | Y | Y |
+| Sticker | Y | Y | Y | Y | Y | Y |
+| DifferenceArrow | Y | Y | - | - | Y | Y |
+| AverageLine | Y | Y | - | - | Y (仅轴类) | Y |
+| GoalLine | Y | Y | - | - | Y (仅轴类) | Y |
+| TrendLine | Y | Y | - | - | Y (仅轴类) | Y |
+| Highlight | Y (含 Stacked) | Y | - | - | Y | Y (仅 bar) |
+| HighlightLabel | Y | Y | Y | Y | Y | Y |
 
 ### 各类型特殊规则
 
@@ -397,6 +398,14 @@ for series in all_series:
 **X 轴标签间隔：** 密集模式下 X 轴标签不逐一显示，按等距间隔取样（推荐 8-12 个标签），如 52 周取每 5 周显示。
 
 ---
+
+**Funnel (v3)**：
+- 形态是 Column 的单系列变体，不是传统倒三角漏斗
+- Widget 锚定点 = 柱顶中心 (bar_cx, bar_top)，气泡方向与 Column 相同（上下结构）
+- DifferenceArrow 连接两根柱顶，三段结构为 垂直→水平→垂直
+- 恒为单系列：无图例列；Highlight 仅 bar 模式
+- TrendLine：与 Column 相同；存在时柱体 `fill-opacity="0.3"`，斜面保持 0.2
+- AverageLine 可用但叙事上较少推荐（阶段是转化链路，均值语义弱）；GoalLine 可用于转化目标
 
 **Pie (v2)**：
 - 无坐标轴，不支持 DifferenceArrow / AverageLine / GoalLine / TrendLine
@@ -748,6 +757,153 @@ DifferenceArrow 跨系列规则：
 - 允许柱顶 → 同类目线节点的对比（垂直段很短时用 Comment 替代）
 - 允许同系列不同类目的对比（如 Q1柱 → Q4柱）
 - connector_y 碰撞避让规则与 Column 一致
+
+## Funnel 图表元素
+
+Graphy Funnel 是 Column 的形态变体，不是传统倒三角漏斗：单值列 + 分类轴 + 数值轴的柱状图，数据强制按值降序，并在相邻柱顶之间绘制半透明连接斜面。
+
+```
+████████╲        ╱████████╲      ╱████
+████████ ╲      ╱ ████████ ╲    ╱ ████
+████████  ╲    ╱  ████████  ╲  ╱  ████
+████████   ╲  ╱   ████████   ╲╱   ████
+  阶段1           阶段2           阶段3
+```
+
+### 数据规则
+
+| 规则 | 说明 |
+|------|------|
+| 系列数 | 恒为 1。多列数值时取用户指定的值列，其余忽略 |
+| 排序 | **数据层强制按值降序**（左宽右窄）。稳定排序：值相等时保持原相对顺序 |
+| 阶段数 | 推荐 3~8。少于 3 不构成漏斗；超过 8 柱宽过窄、斜面拥挤 |
+| 图例 | 不绘制（单系列无对比意义），`legend_col_w = 0`，图表区撑满到 content_right |
+
+若用户提供的业务流程顺序与降序不一致，仍按值降序绘制，并在 Insight 中说明实际顺序。
+
+### 布局
+
+复用 Column 的坐标系（Y 轴、网格、基线、X 轴类目标签）。无图例列：
+
+```
+chart_x = content_x + 56          # 104，与 Column 相同
+chart_w = content_right - chart_x # 无 legend 预留
+plot_top = chart_area_y + 60
+plot_bottom / baseline_y = chart_area_bottom - 36
+```
+
+Y 轴刻度、网格线规则与 Column 相同。max = 降序后首段（最大值）。
+
+### 柱子
+
+柱宽占分类带宽的 **60%**（`FUNNEL_BAR_RATIO = 0.6`），比分组柱更宽，给斜面留出间隙。
+
+```
+n = 阶段数
+group_w = chart_w / n
+bar_w = int(round(group_w * 0.6))
+group_center = chart_x + (i + 0.5) * group_w
+bar_x = int(round(group_center - bar_w / 2))
+bar_h = int(round(value / max_val * plot_height))
+bar_top = baseline_y - bar_h
+```
+
+```svg
+<rect x="{bar_x}" y="{bar_top}" width="{bar_w}" height="{bar_h}" rx="3" fill="{series_color}"/>
+```
+
+| 参数 | 值 | 说明 |
+|------|------|------|
+| 柱宽 | `group_w * 0.6` | 随阶段数变化，非固定 58px |
+| 圆角 | rx=3 | 与 Column 相同 |
+| 颜色 | 主题色盘 1 系列色 | **全部阶段同色**（非逐段换色） |
+| Monochrome 取色 | index 3 | 与单系列 Column 相同 |
+
+### 连接斜面 (Ribbon)
+
+相邻柱顶上边角之间的梯形，填充柱间空隙并延伸到基线。斜面必须精确起止于柱子上边角，不能连分类中心。
+
+```svg
+<polygon points="{x0_right},{y0} {x1_left},{y1} {x1_left},{y_base} {x0_right},{y_base}"
+  fill="{series_color}" fill-opacity="0.2"/>
+```
+
+```python
+for i in range(n - 1):
+    x0_right = bar_x[i] + bar_w
+    x1_left = bar_x[i + 1]
+    y0 = bar_top[i]
+    y1 = bar_top[i + 1]
+    y_base = baseline_y
+    # 全部坐标 int(round(...))
+    draw_polygon([(x0_right, y0), (x1_left, y1), (x1_left, y_base), (x0_right, y_base)])
+```
+
+| 参数 | 值 | 说明 |
+|------|------|------|
+| 绘制 | `<polygon>` 四点梯形 | 不用 path / polyline（飞书偏移）；不用 rgba() |
+| 填充 | 系列色 + `fill-opacity="0.2"` | 飞书不支持 rgba，必须拆成 hex + fill-opacity |
+| 层级 | 先斜面、后柱子 | 柱子覆盖斜面左右边 |
+| 交互 | 斜面不承载 Widget | Widget 只锚定柱顶 |
+
+### 数据标签
+
+默认开启。阈值与 Column「高度 < 30px 隐藏」不同：Funnel **不隐藏**短柱标签，而是外移。
+
+| 条件 | 位置 | 样式 |
+|------|------|------|
+| `value / max >= 0.05` | 柱内顶部，距柱顶 18px | 白色 `#FFFFFF`，font-size 12 / weight 500 |
+| `value / max < 0.05` | 柱顶外侧 + 药丸底 | 正文色 `#1a1a1a`，白底描边药丸 |
+
+短柱药丸（避免白字压到坐标轴 / 斜面上）：
+
+```svg
+<rect x="{cx - pill_w/2}" y="{bar_top - 22}" width="{pill_w}" height="18" rx="4"
+  fill="#FFFFFF" stroke="#f1f1f1" stroke-width="1"/>
+<text x="{cx}" y="{bar_top - 9}" text-anchor="middle"
+  font-size="12" font-weight="500" fill="#1a1a1a">{value}</text>
+```
+
+`pill_w` = 文字宽 + 10px。全局一致性：Data Label 全开或全关；PinNumber 所在柱隐藏 Data Label。
+
+### SVG 绘制顺序（Funnel 专用）
+
+```
+1. Border
+2. 网格线 + 基线
+3. 连接斜面 polygon          ← 在柱子之下
+4. 柱子 rect
+5. 数据标签（含短柱药丸）
+6. X / Y 轴标签
+7. AverageLine / GoalLine / TrendLine
+8. DifferenceArrow
+9. Comment / PinNumber / Sticker
+10. 标题 / Insight
+```
+
+无图例。
+
+### Widget 兼容
+
+| Widget | 支持 | 锚定 / 说明 |
+|--------|:----:|-------------|
+| Comment / PinNumber / Sticker | Y | 柱顶中心，上下气泡 |
+| DifferenceArrow | Y | 连接两阶段柱顶；叙事首选：标注相邻阶段转化跌幅 |
+| AverageLine | Y | 可用，漏斗场景较少推荐 |
+| GoalLine | Y | 转化目标（如「成交目标 800」） |
+| TrendLine | Y | 与 Column 相同；柱体弱化，斜面保持 0.2 |
+| Highlight | Y | **仅 bar**（单系列，group/series 无意义） |
+| HighlightLabel | Y | Data Label 全局关闭时使用 |
+
+Highlight bar 模式：高亮柱 opacity=1，非高亮柱 `fill-opacity="0.3"`；斜面不参与高亮（始终 0.2）。Data Label 跟随所属柱弱化。
+
+### 叙事选择
+
+优先标注转化断点，而非每个阶段都贴 Widget（宁少勿多，2~4 个）：
+
+- 跌幅最大的相邻阶段 → DifferenceArrow（如 "−66%"）
+- 关键瓶颈或首次低于某阈值的阶段 → Comment
+- 最终转化 / 爆发节点 → Sticker 或 PinNumber
 
 ### 通用约束
 

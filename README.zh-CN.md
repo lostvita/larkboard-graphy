@@ -38,6 +38,10 @@
 |:--:|:--:|:--:|:--:|
 | ![donut-widgets](./assets/donut-widgets.png) | ![column-stacked](./assets/column-stacked.png) | ![combo-bar-line](./assets/combo-bar-line.png) | ![bar-100-stacked](./assets/bar-100-stacked.png) |
 
+| 漏斗图 |
+|:--:|
+| ![funnel](./assets/funnel.png) |
+
 ## 支持图表类型
 
 | 类型 | 说明 |
@@ -52,6 +56,7 @@
 | Pie | 饼图（实心圆） |
 | Donut | 环形图（可含中心标签） |
 | Combo | 柱线组合图 |
+| Funnel | 漏斗图（单系列柱 + 连接斜面） |
 
 ## Widget 体系
 
@@ -212,10 +217,6 @@ Q4	1280	620	520
 - [ ] 瀑布图（Waterfall）支持
 - [ ] 散点图 / 气泡图
 - [ ] 水平时间轴图
-- [ ] 多画板联动仪表盘
-- [ ] 动画 / 转场效果（若飞书支持）
-- [ ] 对接实时数据源自动刷新
-- [ ] 同时导出 PNG / PDF
 
 ## 协议
 

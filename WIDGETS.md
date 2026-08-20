@@ -565,7 +565,7 @@ ext_end = (end_x + unit_x * extend, end_y + unit_y * extend)
 | 颜色 | {series_color} | 跟随对应系列的颜色 |
 | 延伸距离 | 20px | 两端各延伸 |
 | 多系列 | 每个系列独立一条 | 颜色分别对应 |
-| 支持图表 | Column / Line / Combo | 不支持 Bar（水平）、Stacked、Pie、Donut |
+| 支持图表 | Column / Line / Combo / Funnel | 不支持 Bar（水平）、Stacked、Pie、Donut |
 
 ### 使用规则
 
@@ -576,6 +576,7 @@ ext_end = (end_x + unit_x * extend, end_y + unit_y * extend)
 - 不显示标签（通过 Insight 正文说明趋势含义）
 - 当 TrendLine 存在时，图表主数据元素需弱化显示以突出趋势：
   - Column 图：柱体 `fill-opacity="0.3"`
+  - Funnel 图：柱体 `fill-opacity="0.3"`，连接斜面保持 0.2
   - Line 图：线段 `stroke-opacity="0.3"`、节点 `opacity="0.3"`、面积填充保持原 opacity
   - Combo 图：同上分别处理柱/线
   - Widgets（Comment / PinNumber / Sticker / HighlightLabel 等）**不弱化**，保持 opacity=1
@@ -598,7 +599,7 @@ ext_end = (end_x + unit_x * extend, end_y + unit_y * extend)
 
 ### 高亮模式
 
-**Column / Bar / Stacked 图表（弱化模式）：**
+**Column / Bar / Stacked / Funnel 图表（弱化模式）：**
 
 | 模式 | 参数 | 说明 | 系列限制 |
 |------|------|------|---------|
@@ -615,7 +616,7 @@ ext_end = (end_x + unit_x * extend, end_y + unit_y * extend)
 
 ### SVG 实现
 
-**Column / Bar / Stacked — bar/group/series 模式：**
+**Column / Bar / Stacked / Funnel — bar/group/series 模式：**
 
 - 被高亮元素：正常绘制（opacity 不设置，默认 1）
 - 非高亮元素：
@@ -661,6 +662,7 @@ ext_end = (end_x + unit_x * extend, end_y + unit_y * extend)
 - 每张图表最多一个 Highlight Widget（可指定多个目标，如高亮多个 bar）
 - 单系列时：仅支持 bar / point 模式
 - 多系列时：支持所有模式
+- Funnel 恒为单系列，仅 bar 模式；斜面不参与高亮（始终 fill-opacity 0.2）
 - 不支持 Pie / Donut（环形图用扇区分离表达强调）
 - 与 TrendLine 互斥
 - Stacked 图表的 bar 模式：高亮的是堆叠中的某一段
@@ -703,7 +705,7 @@ ext_end = (end_x + unit_x * extend, end_y + unit_y * extend)
 
 | 图表方向 | 适用图表类型 | 气泡结构 | 三角指向 |
 |----------|-------------|----------|----------|
-| 纵向 (Column) | Column / Column Stacked / Column 100% Stacked / Line / Combo | 上下结构：气泡在锚定点上方，三角朝下 | ▽ 指向锚定点 |
+| 纵向 (Column) | Column / Column Stacked / Column 100% Stacked / Line / Combo / Funnel | 上下结构：气泡在锚定点上方，三角朝下 | ▽ 指向锚定点 |
 | 横向 (Bar) | Bar / Bar Stacked / Bar 100% Stacked | 左右结构：气泡在锚定点右侧，三角朝左 | ◁ 指向锚定点 |
 | 环形 (Pie/Donut) | Pie / Donut | 上下结构：气泡在锚定点上方，三角朝下 | ▽ 指向锚定点 |
 
